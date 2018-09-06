@@ -7,6 +7,7 @@ const exphbs = require('express-handlebars');
 const mongoose = require('mongoose');
 // require bosy parser to parse through the form content
 const bodyParser = require('body-parser');
+const methodOverride = require('method-override')
 const port = 3000;
 
 // connect to the mongo db
@@ -30,6 +31,9 @@ app.use(bodyParser.json())
 // middleware for express handlebars
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
+
+// override with POST having ?_method=DELETE
+app.use(methodOverride('_method'))
 // middleware codes
 // app.use((req, res, next) =>{
 //   console.log('middleware running');
@@ -103,5 +107,45 @@ app.get('/blogs', (req, res) =>{
   })
   .catch(err => console.log(err));
 });
+
+// edit a blog
+
+app.get('/blogs/:id/edit', (req, res) => {
+  Blog.findById({
+    _id: req.params.id
+  })
+  .then(blog => {
+    console.log(blog)
+    res.render('blogs/edit', {
+       blog: blog
+    })
+  })
+});
+// update the database
+app.put('/blogs/:id', (req, res) => {
+  // find the blog
+  Blog.findById({
+    _id: req.params.id
+  })
+  .then(blog => {
+    // update the blog with new valus from the form
+    blog.title = req.body.title,
+    blog.description = req.body.description
+    // save the update blog
+    blog.save()
+      .then(() => res.redirect('/blogs'))
+  })
+  .catch((err) => console.log(err));
+});
+
+// delete the blog
+app.delete('/blogs/:id', (req, res) => {
+  Blog.remove({
+    _id: req.params.id
+  })
+  .then(() => res.redirect('/blogs'))
+  .catch( err => console.log(err));
+});
+
 // start a server
 app.listen(port, () => console.log(`sever started on port ${port}`));
