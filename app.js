@@ -10,6 +10,9 @@ const bodyParser = require('body-parser');
 const methodOverride = require('method-override')
 const port = 3000;
 
+// load routes
+const users = require('./routes/users');
+
 // connect to the mongo db
 mongoose.connect('mongodb://localhost/blog-dev', { useNewUrlParser: true })
 .then(() => console.log("connected to db"))
@@ -146,6 +149,6 @@ app.delete('/blogs/:id', (req, res) => {
   .then(() => res.redirect('/blogs'))
   .catch( err => console.log(err));
 });
-
+app.use('/users', users);
 // start a server
 app.listen(port, () => console.log(`sever started on port ${port}`));
