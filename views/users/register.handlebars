@@ -12,25 +12,25 @@
         <form class="col s12" action="/users/register" method="post" >
           <div class="row">
             <div class="input-field col s12">
-              <input placeholder="Name" id="name" type="text" class="validate" name="name">
+              <input placeholder="Name" id="name" type="text" class="validate" name="name" required value={{name}}>
               <label for="name">Name</label>
             </div>
           </div>
           <div class="row">
             <div class="input-field col s12">
-              <input placeholder="Email" id="email" type="text" class="validate" name="email">
+              <input placeholder="Email" id="email" type="email" class="validate" name="email" required value = {{email}}>
               <label for="email">Email</label>
             </div>
           </div>
           <div class="row">
             <div class="input-field col s6">
-              <input placeholder="Password" id="Password" type="password" class="validate" name="password" >
+              <input placeholder="Password" id="Password" type="password" class="validate" name="password" required value = {{password}}>
               <label for="password">Password</label>
             </div>
           </div>
           <div class="row">
             <div class="input-field col s6">
-              <input placeholder="Confirm Password" id="Password2" type="password" class="validate" name="password2" >
+              <input placeholder="Confirm Password" id="Password2" type="password" class="validate" name="password2" required value = {{pasword2}} >
               <label for="password2">Confirm Password</label>
             </div>
           </div>

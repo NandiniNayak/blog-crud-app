@@ -8,10 +8,13 @@ const mongoose = require('mongoose');
 // require bosy parser to parse through the form content
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override')
+const passport = require('passport');
 const port = 3000;
 
 // load routes
 const users = require('./routes/users');
+// load passport config
+require('./config/passport')(passport);
 
 // connect to the mongo db
 mongoose.connect('mongodb://localhost/blog-dev', { useNewUrlParser: true })
@@ -37,6 +40,9 @@ app.set('view engine', 'handlebars');
 
 // override with POST having ?_method=DELETE
 app.use(methodOverride('_method'))
+
+app.use(passport.initialize());
+app.use(passport.session());
 // middleware codes
 // app.use((req, res, next) =>{
 //   console.log('middleware running');
