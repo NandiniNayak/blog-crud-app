@@ -12,7 +12,10 @@ const passport = require('passport');
 const session = require('express-session');
 // bring in the helper ensure authenticated function
 const {ensureAuthenticated} = require('./helper/auth');
-const port = 3000;
+// include the database
+const db = require('./config/database');
+// if on production use production port else use 3000
+const port = process.env.PORT || 3000;
 
 // load routes
 const users = require('./routes/users');
@@ -20,7 +23,7 @@ const users = require('./routes/users');
 require('./config/passport')(passport);
 
 // connect to the mongo db
-mongoose.connect('mongodb://localhost/blog-dev', { useNewUrlParser: true })
+mongoose.connect(db.mongoURI, { useNewUrlParser: true })
 .then(() => console.log("connected to db"))
 .catch((err) => console.log(err));
 
