@@ -39,30 +39,28 @@ router.post('/register', (req, res) => {
     // check if email already exsts in the db
     // res.send('passed');
     // create a user object
-    let newUser = {
-      name: req.body.name,
-      email: req.body.email,
-      password: req.body.password
-    }
-      // encrypt the password
-    bcrypt.genSalt(10, (err, salt) => {
-    bcrypt.hash(newUser.password, salt, (err, hash) => {
-        // Store hash in your password DB.
-        if (err => console.log(err))
-        // set the encrypted password as the new password in the db
-        newUser.password = hash;
-        // create User model and insert data to db
-        new User(newUser).save()
-          .then(users => {
-            // redirect to home page
-              res.redirect('/');
-          })
-          .catch( err => console.log(err));
+      let newUser = {
+        name: req.body.name,
+        email: req.body.email,
+        password: req.body.password
+      }
+        // encrypt the password
+      bcrypt.genSalt(10, (err, salt) => {
+      bcrypt.hash(newUser.password, salt, (err, hash) => {
+          // Store hash in your password DB.
+          if (err => console.log(err))
+          // set the encrypted password as the new password in the db
+          newUser.password = hash;
+          // create User model and insert data to db
+          new User(newUser).save()
+            .then(users => {
+              // redirect to home page
+                res.redirect('/');
+            })
+            .catch( err => console.log(err));
+      });
     });
-  });
-
   }
-
 })
 // Login route
 router.get('/login', (req, res) => {
@@ -75,5 +73,12 @@ router.post('/login', (req, res, next) => {
     failureRedirect: '/login'
   })(req, res, next);
 })
+
+// logout route
+router.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect('/users/login');
+})
+
 
 module.exports = router;

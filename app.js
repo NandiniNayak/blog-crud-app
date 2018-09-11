@@ -9,6 +9,9 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override')
 const passport = require('passport');
+const session = require('express-session');
+// bring in the helper ensure authenticated function
+const {ensureAuthenticated} = require('./helper/auth');
 const port = 3000;
 
 // load routes
@@ -40,9 +43,23 @@ app.set('view engine', 'handlebars');
 
 // override with POST having ?_method=DELETE
 app.use(methodOverride('_method'))
+// middle ware for express-session
+// note: passport middleware must be placed after express session
+app.set('trust proxy', 1) // trust first proxy
+app.use(session({
+  secret: 'secure',
+  resave: false,
+  saveUninitialized: true
+}))
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use((req, res, next) => {
+  // declare a global variable user to be accessed in the views files
+  res.locals.user = req.user;
+  next();
+})
 // middleware codes
 // app.use((req, res, next) =>{
 //   console.log('middleware running');
@@ -67,7 +84,7 @@ app.get('/about', (req, res) => {
 });
 
 // add form
-app.get('/blogs/new', (req, res) => {
+app.get('/blogs/new', ensureAuthenticated,  (req, res) => {
    res.render('blogs/new');
 });
 
@@ -94,7 +111,9 @@ app.post('/blogs',(req, res) => {
     // res.send('passed');
     let newBlog = {
       title: req.body.title,
-      description: req.body.description
+      description: req.body.description,
+      // update user id to the blog
+      user: req.user.id
     }
     new Blog(newBlog)
     .save()
@@ -119,15 +138,21 @@ app.get('/blogs', (req, res) =>{
 
 // edit a blog
 
-app.get('/blogs/:id/edit', (req, res) => {
+app.get('/blogs/:id/edit', ensureAuthenticated, (req, res) => {
   Blog.findById({
     _id: req.params.id
   })
   .then(blog => {
-    console.log(blog)
-    res.render('blogs/edit', {
-       blog: blog
-    })
+    // if the blog does not belong to logged in user
+    if(blog.user != req.user.id) {
+      // redirect back to home page
+      res.redirect('/');
+    } else {
+      console.log(blog)
+      res.render('blogs/edit', {
+         blog: blog
+      });
+    }
   })
 });
 // update the database
@@ -148,7 +173,7 @@ app.put('/blogs/:id', (req, res) => {
 });
 
 // delete the blog
-app.delete('/blogs/:id', (req, res) => {
+app.delete('/blogs/:id', ensureAuthenticated, (req, res) => {
   Blog.remove({
     _id: req.params.id
   })
