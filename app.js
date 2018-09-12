@@ -10,6 +10,7 @@ const bodyParser = require('body-parser');
 const methodOverride = require('method-override')
 const passport = require('passport');
 const session = require('express-session');
+const flash = require('connect-flash');
 // bring in the helper ensure authenticated function
 const {ensureAuthenticated} = require('./helper/auth');
 // include the database
@@ -53,16 +54,23 @@ app.use(session({
   secret: 'secure',
   resave: false,
   saveUninitialized: true
-}))
+}));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
+// middleware for flash messages
+app.use(flash());
 app.use((req, res, next) => {
+  // declare a global variable for success msg
+  res.locals.success_msg = req.flash('success_msg');
+  //declare a global variable for error msg
+  res.locals.error_msg = req.flash('error_msg');
   // declare a global variable user to be accessed in the views files
   res.locals.user = req.user;
   next();
 })
+
 // middleware codes
 // app.use((req, res, next) =>{
 //   console.log('middleware running');
@@ -108,7 +116,6 @@ app.post('/blogs',(req, res) => {
       description: req.body.description,
       errors: errors,
     });
-
   } else {
     // save to db
     // res.send('passed');
@@ -149,7 +156,8 @@ app.get('/blogs/:id/edit', ensureAuthenticated, (req, res) => {
     // if the blog does not belong to logged in user
     if(blog.user != req.user.id) {
       // redirect back to home page
-      res.redirect('/');
+      req.flash('error_msg', 'unauthorized user')
+      res.redirect('/blogs');
     } else {
       console.log(blog)
       res.render('blogs/edit', {
@@ -180,7 +188,10 @@ app.delete('/blogs/:id', ensureAuthenticated, (req, res) => {
   Blog.remove({
     _id: req.params.id
   })
-  .then(() => res.redirect('/blogs'))
+  .then(() =>{
+     req.flash('success_msg', 'you have successfully deleted the blog');
+     res.redirect('/blogs')
+  })
   .catch( err => console.log(err));
 });
 app.use('/users', users);
